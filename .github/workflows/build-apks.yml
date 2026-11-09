@@ -1,3 +1,4 @@
+
 name: Crear los 6 APK
 
 on:
@@ -24,6 +25,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '7.6.4'
+
+      - name: Extraer proyectos
+        run: unzip -o FlowApps-Android11-source.zip
+
       - name: Reparar código de Countdown
         run: |
           cat > FlowAppsAndroid/Countdown/app/src/main/java/com/flowapps/countdown/MainActivity.java <<'EOF'
@@ -105,8 +110,6 @@ jobs:
               }
           }
           EOF
-      - name: Extraer proyectos
-        run: unzip -o FlowApps-Android11-source.zip
 
       - name: Crear APK de EventFlow
         run: gradle -p FlowAppsAndroid/EventFlow assembleDebug
@@ -141,3 +144,4 @@ jobs:
         with:
           name: Mis-seis-APK
           path: dist/*.apk
+          
