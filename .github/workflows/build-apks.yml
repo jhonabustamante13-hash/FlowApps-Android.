@@ -1,0 +1,63 @@
+name: Crear los 6 APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar archivos
+        uses: actions/checkout@v4
+
+      - name: Preparar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+
+      - name: Preparar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '7.6.4'
+
+      - name: Extraer proyectos
+        run: unzip -o FlowApps-Android11-source.zip
+
+      - name: Crear APK de EventFlow
+        run: gradle -p FlowAppsAndroid/EventFlow assembleDebug
+
+      - name: Crear APK de Countdown
+        run: gradle -p FlowAppsAndroid/Countdown assembleDebug
+
+      - name: Crear APK de WordFlow
+        run: gradle -p FlowAppsAndroid/WordFlow assembleDebug
+
+      - name: Crear APK de GalleryX
+        run: gradle -p FlowAppsAndroid/GalleryX assembleDebug
+
+      - name: Crear APK de MusicFlow
+        run: gradle -p FlowAppsAndroid/MusicFlow assembleDebug
+
+      - name: Crear APK de TaskFlow
+        run: gradle -p FlowAppsAndroid/TaskFlow assembleDebug
+
+      - name: Reunir los APK
+        run: |
+          mkdir -p dist
+          cp FlowAppsAndroid/EventFlow/app/build/outputs/apk/debug/app-debug.apk dist/EventFlow.apk
+          cp FlowAppsAndroid/Countdown/app/build/outputs/apk/debug/app-debug.apk dist/Countdown.apk
+          cp FlowAppsAndroid/WordFlow/app/build/outputs/apk/debug/app-debug.apk dist/WordFlow.apk
+          cp FlowAppsAndroid/GalleryX/app/build/outputs/apk/debug/app-debug.apk dist/GalleryX.apk
+          cp FlowAppsAndroid/MusicFlow/app/build/outputs/apk/debug/app-debug.apk dist/MusicFlow.apk
+          cp FlowAppsAndroid/TaskFlow/app/build/outputs/apk/debug/app-debug.apk dist/TaskFlow.apk
+
+      - name: Guardar los APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mis-seis-APK
+          path: dist/*.apk
