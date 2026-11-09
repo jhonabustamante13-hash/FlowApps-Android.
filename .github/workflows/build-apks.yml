@@ -24,7 +24,87 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '7.6.4'
+      - name: Reparar código de Countdown
+        run: |
+          cat > FlowAppsAndroid/Countdown/app/src/main/java/com/flowapps/countdown/MainActivity.java <<'EOF'
+          package com.flowapps.countdown;
 
+          import android.app.*;
+          import android.os.*;
+          import android.widget.*;
+          import java.util.*;
+
+          public class MainActivity extends Activity {
+              TextView output;
+              CountDownTimer timer;
+
+              public void onCreate(Bundle b) {
+                  super.onCreate(b);
+                  LinearLayout l = new LinearLayout(this);
+                  l.setOrientation(1);
+                  l.setPadding(28, 36, 28, 24);
+                  l.setBackgroundColor(0xff101827);
+                  setContentView(l);
+
+                  TextView h = new TextView(this);
+                  h.setText("Countdown");
+                  h.setTextSize(30);
+                  h.setTextColor(-1);
+                  l.addView(h);
+
+                  output = new TextView(this);
+                  output.setText("Elige una fecha para iniciar la cuenta regresiva");
+                  output.setTextColor(-1);
+                  output.setTextSize(20);
+                  l.addView(output);
+
+                  Button choose = new Button(this);
+                  choose.setText("Elegir fecha y hora");
+                  l.addView(choose);
+
+                  choose.setOnClickListener(v -> {
+                      Calendar c = Calendar.getInstance();
+                      new DatePickerDialog(this, (a, y, m, d) ->
+                          new TimePickerDialog(this, (x, hh, mm) ->
+                              start(y, m, d, hh, mm),
+                              c.get(Calendar.HOUR_OF_DAY),
+                              c.get(Calendar.MINUTE), true).show(),
+                          c.get(Calendar.YEAR),
+                          c.get(Calendar.MONTH),
+                          c.get(Calendar.DAY_OF_MONTH)).show();
+                  });
+              }
+
+              void start(int y, int m, int d, int h, int min) {
+                  Calendar c = Calendar.getInstance();
+                  c.set(y, m, d, h, min, 0);
+                  long diff = c.getTimeInMillis() - System.currentTimeMillis();
+
+                  if (diff <= 0) {
+                      output.setText("La fecha ya pasó");
+                      return;
+                  }
+
+                  if (timer != null) timer.cancel();
+
+                  timer = new CountDownTimer(diff, 1000) {
+                      public void onTick(long x) {
+                          long s = x / 1000;
+                          output.setText(
+                              (s / 86400) + " días\n" +
+                              ((s % 86400) / 3600) + " horas\n" +
+                              ((s % 3600) / 60) + " minutos\n" +
+                              (s % 60) + " segundos"
+                          );
+                      }
+
+                      public void onFinish() {
+                          output.setText("¡Llegó el momento!");
+                      }
+                  }.start();
+              }
+          }
+          EOF
       - name: Extraer proyectos
         run: unzip -o FlowApps-Android11-source.zip
 
